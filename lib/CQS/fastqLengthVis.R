@@ -6,6 +6,8 @@ library(reshape2)
 library(ggplot2)
 library(cowplot)
 
+colorNames="Set1"
+
 #source("/home/zhaos/source/r_cqs/vickers/codesToPipeline/countTableVisFunctions.R")
 
 lengthFiles<-read.delim(lengthFileList,as.is=T,header=F)
@@ -39,6 +41,10 @@ if (groupFileList!="") {
 	colnames(temp)<-c("Position","Group","Percent")
 	png(paste0(resultFile,".group.png"),width=2000,height=1500,res=300)
 	p<-ggplot(temp,aes(x=Position,y=Percent,colour= Group))+geom_line()
+	if (colorNames!="") {
+		colors<-makeColors(length(unique(temp[,Group])),colorNames)
+		p<-p+scale_colour_manual(values=colors)
+	}
 	print(p)
 	dev.off()
 }

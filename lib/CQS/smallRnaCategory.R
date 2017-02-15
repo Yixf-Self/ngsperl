@@ -34,6 +34,7 @@ categoryAllTable<-acast(categoryAll,V1~Sample,value.var="V2")
 summaryInd<-which(row.names(categoryAllTable) %in% c("TotalReads","MappedReads","FeatureReads"))
 categoryAllTable1<-categoryAllTable[summaryInd,]
 categoryAllTable2<-categoryAllTable[-summaryInd,]
+row.names(categoryAllTable2)<-smallRnaNameChange(row.names(categoryAllTable2))
 write.csv(rbind(categoryAllTable1,categoryAllTable2),paste0(taskName,".Category.Table.csv"))
 
 ################################

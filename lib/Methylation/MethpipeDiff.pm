@@ -35,8 +35,8 @@ sub perform {
   my $methfiles = get_raw_files( $config, $section, "methfile" );
   my $hmrfiles = get_raw_files( $config, $section, "hmrfile" );
 
-  my $minCpG=10;
-  my $minSigCpG=5;
+  my $minCpG = get_option( $config, $section, "minCpG", 10);
+  my $minSigCpG = get_option( $config, $section, "minSigCpG", 5);
 
   my $shfile = $self->get_task_filename( $pbs_dir, $task_name );
   open( my $sh, ">$shfile" ) or die "Cannot create $shfile";
@@ -86,7 +86,12 @@ fi
 
 if [ ! -s $dmrFile1Filter ]; then
   echo filter=`date`
-  awk -F \"[:\\t]\" ’\$5 >= 10 && \$6 >= 5 {print \$0}’ $dmrFile1 $dmrFile1Filter
+  awk -F \"[:\\t]\" '\$5 >= $minCpG && \$6 >= $minSigCpG {print \$0}' $dmrFile1 > $dmrFile1Filter
+fi
+
+if [ ! -s $dmrFile2Filter ]; then
+  echo filter=`date`
+  awk -F \"[:\\t]\" '\$5 >= $minCpG && \$6 >= $minSigCpG {print \$0}' $dmrFile2 > $dmrFile2Filter
 fi
 ";
     $self->close_pbs( $pbs, $pbs_file );

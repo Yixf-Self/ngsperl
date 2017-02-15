@@ -4,6 +4,17 @@ library(Rcpp)
 ###############################################################################
 # Functions in pipeline
 ###############################################################################
+smallRnaNameChange<-function(x) {
+	result<-x
+	result<-gsub("lincRNA","lncDR",result)
+	result<-gsub("rRNA","rDR",result)
+	result<-gsub("snoRNA","snoDR",result)
+	result<-gsub("snRNA","snDR",result)
+	result<-gsub("tRNA","tDR",result)
+	return(result)
+}
+
+
 saveInError<-function(message="",filePrefix="",fileSuffix=paste0(Sys.Date(),".error")) {
 	if (filePrefix=="") {
 		filename<-fileSuffix

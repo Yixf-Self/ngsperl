@@ -35,6 +35,9 @@ sub perform {
   my $methfiles = get_raw_files( $config, $section, "methfile" );
   my $hmrfiles = get_raw_files( $config, $section, "hmrfile" );
 
+  my $minCpG=10;
+  my $minSigCpG=5;
+
   my $shfile = $self->get_task_filename( $pbs_dir, $task_name );
   open( my $sh, ">$shfile" ) or die "Cannot create $shfile";
   print $sh get_run_command($sh_direct) . "\n";
@@ -55,8 +58,10 @@ sub perform {
     my $methdiffFile      = "${group_name}.methdiff";
     my $controlHmrFile   = ${$hmrfiles->{ $sampleNames[0] }}[0];
     my $treatmentHmrFile = ${$hmrfiles->{ $sampleNames[1] }}[0];
-    my $dmrFile1      = "${controlHmrFile}.DMR";
-    my $dmrFile2      = "${treatmentHmrFile}.DMR";
+    my $dmrFile1      = basename($controlHmrFile).".DMR";
+    my $dmrFile2      = basename($treatmentHmrFile).".DMR";
+    my $dmrFile1Filter=$dmrFile1.".filtered";
+    my $dmrFile2Filter=$dmrFile2.".filtered";
     
     my $pbs_file = $self->get_pbs_filename( $pbs_dir, $group_name );
     my $pbs_name = basename($pbs_file);
@@ -70,10 +75,18 @@ sub perform {
 
     print $pbs "
 if [ ! -s $methdiffFile ]; then
+  echo methdiff=`date`
   methdiff -o $methdiffFile $controlMethFile $treatmentMethFile
 fi
+
 if [[ ! -s $dmrFile1 && ! -s $dmrFile2 ]]; then
+  echo dmr=`date`
   dmr $methdiffFile $controlHmrFile $treatmentHmrFile $dmrFile1 $dmrFile2
+fi
+
+if [ ! -s $dmrFile1Filter ]; then
+  echo filter=`date`
+  awk -F \"[:\\t]\" ’\$5 >= 10 && \$6 >= 5 {print \$0}’ $dmrFile1 $dmrFile1Filter
 fi
 ";
     $self->close_pbs( $pbs, $pbs_file );

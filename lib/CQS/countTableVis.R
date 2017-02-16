@@ -19,10 +19,10 @@ mappingResult2Species<-countTableToSpecies(dat=mappingResult,databaseLogFile=dat
 ggpieToFile(mappingResult2Species,fileName=paste0(resultFile,".Piechart.png"),maxCategory=maxCategory,textSize=textSize,facetColCount=facetColCount)
 
 #Barplot for all samples
-tableBarplotToFile(dat=mappingResult2Species,fileName=paste0(resultFile,".Barplot.png"),totalCountFile=totalCountFile,maxCategory=maxCategory,textSize=textSize)
+tableBarplotToFile(dat=mappingResult2Species,fileName=paste0(resultFile,".Barplot.png"),totalCountFile=totalCountFile,maxCategory=maxCategory,textSize=textSize,height=3000)
 
 #Barplot for Group samples
-tableBarplotToFile(dat=mappingResult2Species,fileName=paste0(resultFile,".Group.Barplot.png"),groupFileList=groupFileList,outFileName=paste0(resultFile,".ReadsPerMillionGroups.csv"),totalCountFile=totalCountFile,maxCategory=maxCategory,textSize=textSize)
+tableBarplotToFile(dat=mappingResult2Species,fileName=paste0(resultFile,".Group.Barplot.png"),groupFileList=groupFileList,outFileName=paste0(resultFile,".ReadsPerMillionGroups.csv"),totalCountFile=totalCountFile,maxCategory=maxCategory,textSize=textSize,height=3000)
 
 #Group Pie chart
 ggpieGroupToFile(dat=mappingResult2Species,fileName=paste0(resultFile,".Group.Piechart.png"),groupFileList=groupFileList,

@@ -454,8 +454,13 @@ tableBarplot<-function(dat,maxCategory=5,x="Sample", y="Reads",fill="Category",f
 	p<-p+geom_bar(stat="identity", width=barwidth)+
 #			guides(fill= guide_legend(title = groupName))+
 			theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + 
-			theme(axis.text = element_text(size=textSize),legend.text=element_text(size=textSize),
-					axis.title = element_text(size=textSize),legend.title= element_text(size=textSize))+
+			theme(axis.text=element_text(size=textSize),
+			    legend.text=element_text(size=textSize),
+					axis.title=element_text(size=textSize),
+					axis.line=element_line(color='black'),
+					legend.title=element_text(size=textSize),
+					panel.grid=element_blank(),
+					panel.background=element_blank())+
 			ylab(ylab)
 
 	return(p)

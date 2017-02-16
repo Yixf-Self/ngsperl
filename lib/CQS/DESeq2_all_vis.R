@@ -1,3 +1,9 @@
+
+if(! exists("textSize")){
+  textSize=13
+  groupTextSize=20
+}
+
 resultFile<-outFile
 deseq2ResultFileList<-parSampleFile1
 visLayoutFileList<-parSampleFile2
@@ -18,7 +24,7 @@ reverselog_trans <- function(base = exp(1)) {
       domain = c(1e-100, Inf))
 }
 
-addVisLayout<-function(datForFigure, visLayoutFileList,LayoutKey="LayoutKey") {
+addVisLayout<-function(datForFigure, visLayoutFileList,LayoutKey="LayoutKey",emptyModuleNames=c()) {
   if (visLayoutFileList!="") {
     visLayout<-read.delim(visLayoutFileList,as.is=T,header=F)
     visLayout<-sapply(split(visLayout[,1],visLayout[,2]),function(x) x)
@@ -29,6 +35,9 @@ addVisLayout<-function(datForFigure, visLayoutFileList,LayoutKey="LayoutKey") {
     visLayout<-data.frame(visLayout[,-which(colnames(visLayout)=="Groups")])
     visLayout$Col_Group<-factor(visLayout$Col_Group,levels=unique(visLayout$Col_Group))
     visLayout$Row_Group<-factor(visLayout$Row_Group,levels=unique(visLayout$Row_Group))
+    
+    visLayout<-visLayout[!(rownames(visLayout) %in% emptyModuleNames),]
+    
     data2Layout<-unique(datForFigure[,LayoutKey])
     for (x in 1:nrow(visLayout)) {
       groupKeys<-strsplit(row.names(visLayout)[x],";")[[1]]
@@ -59,14 +68,22 @@ addVisLayout<-function(datForFigure, visLayoutFileList,LayoutKey="LayoutKey") {
 deseq2ResultFile<-read.delim(deseq2ResultFileList,header=F,as.is=T)
 
 deseq2ResultAll<-NULL
+emptyModuleNames<-c()
 for (i in 1:nrow(deseq2ResultFile)) {
   filePath<-deseq2ResultFile[i,1]
+
   folders<-strsplit(filePath,"\\/")[[1]]
   moduleFolder<-folders[which(folders=="result")-1]
   moduleName<-gsub("_deseq2$","",moduleFolder)
   moduleName<-gsub("^deseq2_","",moduleName)
   moduleName<-gsub("_minicontigs","",moduleName)
   moduleName<-gsub("_contigs","",moduleName)
+
+  if(file.size(filePath) == 0){ #empty file, means no gene is available for DESeq2, ignore
+    emptyModuleNames<-c(emptyModuleNames, paste0(moduleName, "_", deseq2ResultFile[i,2]))
+    next
+  }
+
   deseq2ResultRaw<-read.csv(filePath,header=T,as.is=T)
   
   deseq2Result<-deseq2ResultRaw[,selectedVars]
@@ -98,7 +115,7 @@ diffResult$colour[which(diffResult$Significant==1 & diffResult$log2FoldChange<0)
 #diffResult$colour[which(diffResult$padj<=pvalue & diffResult$log2FoldChange>=log2(foldChange))]<-"red"
 #diffResult$colour[which(diffResult$padj<=pvalue & diffResult$log2FoldChange<=-log2(foldChange))]<-"blue"
 
-diffResult<-addVisLayout(diffResult,visLayoutFileList)
+diffResult<-addVisLayout(diffResult,visLayoutFileList,emptyModuleNames=emptyModuleNames)
 
 if (useRawPvalue==1) {
   p<-ggplot(diffResult,aes(x=log2FoldChange,y=pvalue))+
@@ -116,12 +133,12 @@ p<-p+
     guides(size=guide_legend(title=bquote(log[10]~Base~Mean)))+
     theme_bw()+
     scale_size(range = c(1, 4))+
-    theme(axis.text = element_text(colour = "black",size=20),
-        axis.title = element_text(size=20),
-        legend.text= element_text(size=20),
-        legend.title= element_text(size=20))+
-    theme(strip.text.x = element_text(size = 13),
-        strip.text.y = element_text(size = 13),
+    theme(axis.text = element_text(colour = "black",size=groupTextSize),
+        axis.title = element_text(size=groupTextSize),
+        legend.text= element_text(size=groupTextSize),
+        legend.title= element_text(size=groupTextSize))+
+    theme(strip.text.x = element_text(size = textSize),
+        strip.text.y = element_text(size = textSize),
         legend.position="top")
     
 width<-max(1600,length(unique(diffResult$Pairs))*800)

@@ -90,7 +90,7 @@ fi
     print $pbs "
 if [ ! -s $result_file ]; then
   echo sort walt=`date`
-  sort -k1,1 -k2,2g -k3,3g -k6,6 $result_file_unsorted -o $result_file;
+  LC_ALL=C sort -k1,1 -k2,2n -k3,3n -k6,6 -o $result_file $result_file_unsorted;
 fi
 ";
     $rmlist=$rmlist ." $result_file_unsorted";

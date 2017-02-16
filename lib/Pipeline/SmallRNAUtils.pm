@@ -128,6 +128,7 @@ sub addPositionVis {
       parameterFile2_ref   => [ "bowtie1_genome_1mm_NTA_smallRNA_info", ".mapped.count\$" ],
       parameterSampleFile1 => $def->{tRNA_vis_group},
       parameterSampleFile2 => $def->{groups_vis_layout},
+      rCode                => 'textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       sh_direct            => 1,
       pbs                  => {
         "email"     => $def->{email},
@@ -155,7 +156,7 @@ sub addNonhostVis {
       parameterSampleFile1 => $def->{groups},
       parameterSampleFile2 => $def->{groups_vis_layout},
       parameterFile3_ref   => [ "fastqc_count_vis", ".Reads.csv\$" ],
-      rCode                => 'maxCategory=NA;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+      rCode                => 'maxCategory=NA;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       sh_direct            => 1,
       pbs                  => {
         "email"     => $def->{email},
@@ -189,6 +190,7 @@ sub initializeDefaultOptions {
   initDefaultValue( $def, "fastq_remove_random",         0 );
   initDefaultValue( $def, "mirbase_count_option",        "-p hsa" );
   initDefaultValue( $def, "table_vis_group_text_size",   10 );
+  initDefaultValue( $def, "table_vis_text_size",         10 );
   initDefaultValue( $def, "sequencetask_run_time",       12 );
   initDefaultValue( $def, "DE_show_gene_cluster",        1 );
   initDefaultValue( $def, "DE_pvalue",                   0.05 );

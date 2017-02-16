@@ -3,6 +3,18 @@
 # Author: zhaos
 ###############################################################################
 
+if(exists("textSize")){
+  axisTextSize = textSize
+}else{
+  axisTextSize=12
+}
+
+if(exists("groupTextSize")){
+  stripTextSize=groupTextSize
+}else{
+  stripTextSize=12
+}
+
 maxFeature=25
 
 groupFileList=parSampleFile1
@@ -46,14 +58,14 @@ smallRnaName2Group<-function(x,groupSnRNA=1) {
   }
   return(snRnaGroup)
 }
-position<-read.delim(positionFile, header=T,as.is=T)
+position<-read.delim(positionFile, header=T,as.is=T,check.names=F)
 samples<-unique(position$File)
 
-groupInfo<-read.delim(groupFileList, header=F, as.is=T)
+groupInfo<-read.delim(groupFileList, header=F, as.is=T,check.names=F)
 groups<-unique(groupInfo$V2)
 groupSize<-table(groupInfo[,2])
 
-totalCount<-read.delim(totalCountFile,as.is=T,header=T,row.names=1)
+totalCount<-read.delim(totalCountFile,as.is=T,header=T,row.names=1,check.names=F)
 totalCount<-unlist(totalCount["MappedReads",])
 
 position$FeatureLabel<-paste0(position$Feature,"(",round(position$TotalCount,0),")")
@@ -116,8 +128,6 @@ if (xRange[2]>=110) {
   xRange[2]=xRange[2]+10
 }
 
-axisTextSize=12
-stripTextSize=12
 png(paste0(outFile,".png"), width=width, height=height, res=300)
 p<-ggplot(allPositionByGroup,aes(x=Position,y=Feature,size=GroupPercentage,colour=GroupPercentage))+
     geom_point()+
@@ -141,11 +151,11 @@ print(p)
 dev.off()
 
 if (visLayoutFileList!="") {
-  height=max(length(unique(allPositionByGroup$Row_Group))*2000,3000)
-  width=max(length(unique(allPositionByGroup$Col_Group))*2000,3000)
+  height=max(length(unique(allPositionByGroup$Row_Group))*1000,3000)
+  width=max(length(unique(allPositionByGroup$Col_Group))*1500,3000)
 } else {
   height=3000
-  width=max(length(unique(allPositionByGroup$Group))*2000,3000)
+  width=max(length(unique(allPositionByGroup$Group))*1500,3000)
 }
 maxPos<-max(allPositionByGroup$Position)
 png(paste0(outFile,".allPositionBar.png"),width=width,height=height,res=300)
@@ -154,7 +164,7 @@ m <- ggplot(allPositionByGroup, aes(x = Position,y=GroupPositionCountFraction,fi
     theme_bw()+
     theme(legend.key.size = unit(0.4, "cm"))+
     ylab("cumulative read fraction (read counts/total reads)")+
-    theme(text = element_text(size=20))+theme(legend.text = element_text(size=16))+
+    theme(text = element_text(size=axisTextSize))+theme(legend.text = element_text(size=stripTextSize))+
     guides(fill= guide_legend(ncol = 1,keywidth=1, keyheight=1.5))+
     scale_fill_manual(values=colorRampPalette(brewer.pal(9, "Set1"))(featureNumber)) + 
     xlim(-10, maxPos+5)

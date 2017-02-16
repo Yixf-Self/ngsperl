@@ -164,7 +164,7 @@ m <- ggplot(allPositionByGroup, aes(x = Position,y=GroupPositionCountFraction,fi
     theme_bw()+
     theme(legend.key.size = unit(0.4, "cm"))+
     ylab("cumulative read fraction (read counts/total reads)")+
-    theme(text = element_text(size=axisTextSize))+theme(legend.text = element_text(size=stripTextSize))+
+    theme(text = element_text(size=stripTextSize))+theme(legend.text = element_text(size=axisTextSize))+
     guides(fill= guide_legend(ncol = 1,keywidth=1, keyheight=1.5))+
     scale_fill_manual(values=colorRampPalette(brewer.pal(9, "Set1"))(featureNumber)) + 
     xlim(-10, maxPos+5)

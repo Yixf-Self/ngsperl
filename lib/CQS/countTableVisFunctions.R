@@ -461,7 +461,7 @@ tableBarplot<-function(dat,maxCategory=5,x="Sample", y="Reads",fill="Category",f
 	return(p)
 }
 
-tableBarplotToFile<-function(dat,fileName,totalCountFile="",groupFileList="",outFileName="",maxCategory=5,textSize=9,transformTable=T,height=1500,...) {
+tableBarplotToFile<-function(dat,fileName,totalCountFile="",groupFileList="",outFileName="",maxCategory=5,textSize=9,transformTable=T,height=2000,...) {
 	if (totalCountFile!="") { #normlize with total count *10^6
 		totalCount<-read.csv(totalCountFile,header=T,as.is=T,row.names=1,check.names=FALSE)
 		totalCount<-unlist(totalCount["Reads for Mapping",])
@@ -586,13 +586,12 @@ ggpieToFile<-function(dat,fileName,fill="Category", maxCategory=5,textSize=9,tra
 		rowLength<-length(unique(visLayout[which(visLayout[,2]=="Row_Group"),1]))
 		colLength<-length(unique(visLayout[which(visLayout[,2]=="Col_Group"),1]))
 		maxLength=max(rowLength, colLength)
-		height<-max(2000,maxLength*560)
-#		width<-max(1500,colLength*560)
+		height<-max(3000,maxLength*1000)
 	} else {
 		if (transformTable) {
-			height<-max(2000,(as.integer(sqrt(ncol(dat)))+1)*560)
+			height<-max(3000,(as.integer(sqrt(ncol(dat)))+1)*1000)
 		} else {
-			height<-2000
+			height<-3000
 		}
 #		width<-height
 	}

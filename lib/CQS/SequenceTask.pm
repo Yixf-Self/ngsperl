@@ -101,7 +101,9 @@ sub perform {
   close($rt);
   close($rf);
 
-  print $report "R --vanilla --slave -f $rfile \n";
+  print $report "echo SummerizeTasks=`date`
+R --vanilla --slave -f $rfile
+";
   print $summary "R --vanilla --slave -f $rfile \n";
   $self->close_pbs( $summary, $summary_pbs );
   
@@ -126,7 +128,9 @@ sub perform {
   close($rtReport);
   close($rfReport);
 
-  print $report "R --vanilla --slave -f $rfileReport \n";
+  print $report "echo CreatingReport=`date`
+  R --vanilla --slave -f $rfileReport >$report_log 2>&1
+  ";
   $self->close_pbs( $report, $report_pbs );
 
   my $final = $self->open_pbs( $final_pbs, $pbs_desc, $final_log_desp, $path_file, $pbs_dir );

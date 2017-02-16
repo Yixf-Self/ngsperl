@@ -42,6 +42,7 @@ if(!exists("usePearsonInHCA")){
 }
 
 library("DESeq2")
+library("edgeR")
 library("heatmap3")
 library("lattice")
 library("reshape")
@@ -52,6 +53,21 @@ library("reshape2")
 library("VennDiagram")
 library("RColorBrewer")
 library("preprocessCore")
+
+myEstimateSizeFactors<-function(dds){
+  sfres<-try(dds<-estimateSizeFactors(dds))
+  if (class(sfres) == "try-error") {
+    rawCounts<-counts(dds,normalized=FALSE)
+    y<-DGEList(counts=rawCounts)
+    sfres<-try(y<-calcNormFactors(y, methold="TMM"))
+    if (class(sfres) == "try-error") {
+      sizeFactors(dds)<-apply(rawCounts, 2, sum)
+    }else{
+      sizeFactors(dds)<-y$samples$norm.factors
+    }
+  }
+  return(dds)
+}
 
 setwd(rootdir)  
 comparisons_data<-read.table(inputfile, header=T, check.names=F , sep="\t", stringsAsFactors = F)
@@ -387,14 +403,15 @@ for(countfile_index in c(1:length(countfiles))){
       
       cat(nrow(comparisonData), " genes with minimum median count in group larger or equals than ", minMedianInGroup, "\n")
     }
-
+    
     if (nrow(comparisonData)==0) {
-      message=paste0("Error: 0 Genes can be used in DESeq2 analysis in comparison ",comparisonName," \n")
+      message=paste0("Warning: 0 Genes can be used in DESeq2 analysis in comparison ",comparisonName," \n")
       warning(message)
-      writeLines(message,paste0(comparisonName,".error"))
+      file.create(paste0(prefix, "_DESeq2.csv"))
+      file.create(paste0(prefix, "_DESeq2.no_valid_genes"))
       next;
     }
-    
+
     if(ispaired){
       pairedSamples = unique(designData$Paired)
       
@@ -421,13 +438,31 @@ for(countfile_index in c(1:length(countfiles))){
     }
     
     notEmptyData<-apply(comparisonData, 1, max) > 0
-    
     comparisonData<-comparisonData[notEmptyData,]
+    
+    if (nrow(comparisonData)==0) {
+      message=paste0("Warning: 0 Genes can be used in DESeq2 analysis in comparison ",comparisonName," \n")
+      warning(message)
+      file.create(paste0(prefix, "_DESeq2.csv"))
+      file.create(paste0(prefix, "_DESeq2.no_valid_genes"))
+      next;
+    }
     
     if(ispaired){
       colnames(comparisonData)<-unlist(lapply(c(1:ncol(comparisonData)), function(i){paste0(designData$Paired[i], "_", colnames(comparisonData)[i])}))
     }
     rownames(designData)<-colnames(comparisonData)
+    
+    colSum<-apply(comparisonData, 2, sum)
+    emptySamples<-colnames(comparisonData)[colSum==0]
+    if(length(emptySamples) > 0){
+      message=paste0("Warning: ", length(emptySamples), " samples without any reads, can not be used in DESeq2 analysis in comparison ",comparisonName," \n")
+      warning(message)
+      writeLines(emptySamples,paste0(prefix,".emptySamples"))
+      comparisonData<-comparisonData[,!(colnames(comparisonData) %in% emptySamples)]
+      designData<-designData[!(rownames(designData) %in% emptySamples),]
+    }
+    
     conditionColors<-as.matrix(data.frame(Group=c("red", "blue")[designData$Condition]))
     
     write.csv(comparisonData, file=paste0(prefix, ".csv"))
@@ -455,70 +490,51 @@ for(countfile_index in c(1:length(countfiles))){
     print(g)
     dev.off()
     
-    
     #varianceStabilizingTransformation
-    
-    allDesignData<-designData
-    allComparisonData<-comparisonData
-    
-    excludedSample<-c()
-    zeronumbers<-apply(comparisonData, 2, function(x){sum(x==0)})
-    zeronumbers<-names(zeronumbers[order(zeronumbers)])
-    percent10<-max(1, round(length(zeronumbers) * 0.1))
-    
-    removed<-0
-    
-    excludedCountFile<-paste0(prefix, "_DESeq2-exclude-count.csv")
-    excludedDesignFile<-paste0(prefix, "_DESeq2-exclude-design.csv")
-    if(file.exists(excludedCountFile)){
-      file.remove(excludedCountFile)
-    }
-    if(file.exists(excludedDesignFile)){
-      file.remove(excludedDesignFile)
-    }
-    
+    dds<-myEstimateSizeFactors(dds)
     fitType<-"parametric"
+    vsdFailed<-TRUE
     while(1){
       #varianceStabilizingTransformation
       vsdres<-try(vsd <- varianceStabilizingTransformation(dds, blind=TRUE,fitType=fitType))
-      if(class(vsdres) == "try-error" && grepl("every gene contains at least one zero", vsdres[1])){
-        removed<-removed+1
-        keptNumber<-length(zeronumbers) - percent10 * removed
-        keptSample<-zeronumbers[1:keptNumber]
-        excludedSample<-zeronumbers[(keptNumber+1):length(zeronumbers)]
-        
-        comparisonData<-comparisonData[, colnames(comparisonData) %in% keptSample]
-        designData<-designData[rownames(designData) %in% keptSample,]
-        dds=DESeqDataSetFromMatrix(countData = comparisonData,
-                                   colData = designData,
-                                   design = ~1)
-        
-        colnames(dds)<-colnames(comparisonData)
-      } else if (class(vsdres) == "try-error" && grepl("newsplit: out of vertex space", vsdres[1])) {
-        message=paste0("Warning: varianceStabilizingTransformation function can't run. fitType was set to local to try again")
-        warning(message)
-        fitType<-"mean"
-        writeLines(message,paste0(comparisonName,".error"))
+      if (class(vsdres) == "try-error"){
+        if(grepl("newsplit: out of vertex space", vsdres[1])) {
+          if(fitType=="mean"){
+            message=paste0("Warning: varianceStabilizingTransformation function can't run. error=", vsdres[1])
+            writeLines(message,paste0(prefix,".error"))
+            warning(message)
+            break
+          }else {
+            message=paste0("Warning: varianceStabilizingTransformation function can't run. fitType was set to local to try again")
+            warning(message)
+            fitType<-"mean"
+          }
+        } else {
+          message=paste0("Warning: varianceStabilizingTransformation function can't run. error=", vsdres[1])
+          writeLines(message,paste0(prefix,".error"))
+          warning(message)
+          break
+        }
       } else if(all(is.na(assay(vsd)))){
-        fitType<-"mean"
+        if(fitType=="mean"){
+          message=paste0("Warning: varianceStabilizingTransformation function can't run. Empty assay returned")
+          writeLines(message,paste0(prefix,".error"))
+          warning(message)
+          break
+        }else{
+          message=paste0("Warning: varianceStabilizingTransformation function can't run. fitType was set to local to try again")
+          warning(message)
+          fitType<-"mean"
+        }
       } else{
         conditionColors<-as.matrix(data.frame(Group=c("red", "blue")[designData$Condition]))
+        vsdFailed<-FALSE
         break
       }
     }
-    if (nrow(comparisonData)<=1) {
-      message=paste0("Error: All genes in ",comparisonName," has at least one 0 value. Can't do DESeq2.")
-      warning(message)
-      writeLines(message,paste0(comparisonName,".error"))
-      write.csv("", paste0(prefix, "_DESeq2.csv"))
-      next;
-    }
     
-    if(length(excludedSample) > 0){
-      excludedCountData<-allComparisonData[,colnames(allComparisonData) %in% excludedSample]
-      write.csv(file=excludedCountFile, excludedCountData)
-      excludedDesignData<-allDesignData[rownames(allDesignData) %in% excludedSample,]
-      write.csv(file=excludedDesignFile, excludedDesignData)
+    if(vsdFailed){
+      next
     }
     
     assayvsd<-assay(vsd)
@@ -545,6 +561,7 @@ for(countfile_index in c(1:length(countfiles))){
                                colData = designData,
                                design = designFormula)
     
+    dds<-myEstimateSizeFactors(dds)
     dds <- DESeq(dds,fitType=fitType)
     res<-results(dds,cooksCutoff=FALSE)
     
@@ -907,6 +924,10 @@ if(!is.null(sigTableAll)){
     print(g)
     dev.off()
   }
+}
+
+if(is.null(resultAllOut)){
+  quit()
 }
 
 #write a file with all information

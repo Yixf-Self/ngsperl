@@ -275,7 +275,7 @@ sub getSmallRNAConfig {
         parameterSampleFile2      => $groups,
         parameterSampleFile2Order => $def->{groups_order},
         parameterSampleFile3      => $def->{groups_smallRNA_vis_layout},
-        rCode                     => 'textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode                     => 'textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
         sh_direct                 => 1,
         pbs                       => {
           "email"     => $def->{email},
@@ -297,7 +297,7 @@ sub getSmallRNAConfig {
         parameterSampleFile2      => $def->{groups_vis_layout},
         parameterFile1_ref        => [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".tRNA.count\$" ],
         parameterFile3_ref        => [ "fastqc_count_vis", ".Reads.csv\$" ],
-        rCode                     => 'maxCategory=3;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode                     => 'maxCategory=3;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
         sh_direct                 => 1,
         pbs                       => {
           "email"     => $def->{email},
@@ -383,21 +383,21 @@ sub getSmallRNAConfig {
       addDEseq2( $config, $def, $summary_ref, "tRNA_aminoacid", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".tRNA.aminoacid.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
 
       #snRNA
-      $deseq2Task = addDEseq2( $config, $def, $summary_ref, "snRNA", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snRNA.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
+      $deseq2Task = addDEseq2( $config, $def, $summary_ref, "snRNA", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snRNA.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA, 1 );
       push( @visual_source, ( $deseq2Task, "_DESeq2.csv\$" ) );
-      addDEseq2( $config, $def, $summary_ref, "snRNA_reads", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snRNA.read.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
+      addDEseq2( $config, $def, $summary_ref, "snRNA_reads", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snRNA.read.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA, 1 );
 
       #snoRNA
-      $deseq2Task = addDEseq2( $config, $def, $summary_ref, "snoRNA", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snoRNA.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
+      $deseq2Task = addDEseq2( $config, $def, $summary_ref, "snoRNA", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snoRNA.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA, 1 );
       push( @visual_source, ( $deseq2Task, "_DESeq2.csv\$" ) );
-      addDEseq2( $config, $def, $summary_ref, "snoRNA_reads", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snoRNA.read.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
+      addDEseq2( $config, $def, $summary_ref, "snoRNA_reads", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".snoRNA.read.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA, 1 );
 
       if ( $def->{hasYRNA} ) {
 
         #yRNA
-        $deseq2Task = addDEseq2( $config, $def, $summary_ref, "yRNA", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".yRNA.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
+        $deseq2Task = addDEseq2( $config, $def, $summary_ref, "yRNA", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".yRNA.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA, 1 );
         push( @visual_source, ( $deseq2Task, "_DESeq2.csv\$" ) );
-        addDEseq2( $config, $def, $summary_ref, "yRNA_reads", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".yRNA.read.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA );
+        addDEseq2( $config, $def, $summary_ref, "yRNA_reads", [ "bowtie1_genome_1mm_NTA_smallRNA_table", ".yRNA.read.count\$" ], $host_genome_dir, $DE_min_median_read_smallRNA, 1 );
       }
 
       #rRNA
@@ -609,7 +609,7 @@ sub getSmallRNAConfig {
         output_file        => ".group1Mapping.Result",
         output_file_ext    => ".Piechart.png",
         parameterFile1_ref => [ "bowtie1_bacteria_group1_pm_table", ".category.count\$" ],
-        rCode              => 'maxCategory=4;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode              => 'maxCategory=4;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       }
     );
 
@@ -630,7 +630,7 @@ sub getSmallRNAConfig {
         output_file        => ".group2Mapping.Result",
         output_file_ext    => ".Piechart.png",
         parameterFile1_ref => [ "bowtie1_bacteria_group2_pm_table", ".category.count\$" ],
-        rCode              => 'maxCategory=5;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode              => 'maxCategory=5;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       }
     );
 
@@ -651,7 +651,7 @@ sub getSmallRNAConfig {
         output_file        => ".group4Mapping.Result",
         output_file_ext    => ".Piechart.png",
         parameterFile1_ref => [ "bowtie1_fungus_group4_pm_table", ".category.count\$" ],
-        rCode              => 'maxCategory=8;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode              => 'maxCategory=8;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       }
     );
 
@@ -724,7 +724,7 @@ sub getSmallRNAConfig {
         output_file        => ".tRNAMapping.Result",
         output_file_ext    => ".Species12.csv;.tRNAType1.csv;.tRNAType2.csv",
         parameterFile1_ref => [ "bowtie1_tRNA_pm_table", ".count\$" ],
-        rCode              => 'maxCategory=3;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode              => 'maxCategory=3;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       }
     );
 
@@ -745,7 +745,7 @@ sub getSmallRNAConfig {
         output_file        => ".rRNAMapping.Result",
         output_file_ext    => ".Barplot.png",
         parameterFile1_ref => [ "bowtie1_rRNA_pm_table", ".count\$" ],
-        rCode              => 'maxCategory=NA;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode              => 'maxCategory=NA;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
       }
     );
     push( @name_for_mapPercentage, "bowtie1_tRNA_pm_count", ".count.mapped.xml\$", "bowtie1_rRNA_pm_count", ".count.mapped.xml\$", );
@@ -797,7 +797,7 @@ sub getSmallRNAConfig {
         parameterSampleFile3      => $def->{groups_vis_layout},
         parameterFile3_ref        => [ "fastqc_count_vis", ".Reads.csv\$" ],
         sh_direct                 => 1,
-        rCode                     => 'maxCategory=8;textSize=9;groupTextSize=' . $def->{table_vis_group_text_size} . ';',
+        rCode                     => 'maxCategory=8;textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
         pbs                       => {
           "email"     => $def->{email},
           "emailType" => $def->{emailType},

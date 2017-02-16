@@ -154,7 +154,7 @@ sub addBamStat {
 }
 
 sub addDEseq2 {
-  my ( $config, $def, $summary, $taskKey, $countfileRef, $deseq2Dir, $DE_min_median_read ) = @_;
+  my ( $config, $def, $summary, $taskKey, $countfileRef, $deseq2Dir, $DE_min_median_read, $can_result_be_empty_file ) = @_;
 
   my $taskName = "deseq2_" . $taskKey;
 
@@ -185,6 +185,10 @@ sub addDEseq2 {
       "mem"       => "10gb"
     },
   };
+
+  if ( defined $can_result_be_empty_file && $can_result_be_empty_file ) {
+    $config->{$taskName}{can_result_be_empty_file} = 1;
+  }
   push @$summary, $taskName;
   return $taskName;
 }
@@ -203,7 +207,7 @@ sub addDeseq2Visualization {
     output_file_ext          => ".png",
     parameterSampleFile1_ref => $deseq2FileRef,
     parameterSampleFile2     => $def->{$layoutName},
-    rCode                    => 'useRawPvalue=' . $def->{DE_use_raw_pvalue} . ";",
+    rCode                    => 'useRawPvalue=' . $def->{DE_use_raw_pvalue} . ';textSize='. $def->{table_vis_text_size} . ';groupTextSize=' . $def->{table_vis_group_text_size} . ';',
     sh_direct                => 1,
     cluster                  => $def->{cluster},
     pbs                      => {
